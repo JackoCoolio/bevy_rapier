@@ -3,8 +3,8 @@ use std::collections::HashMap;
 use std::sync::RwLock;
 
 use rapier::prelude::{
-    Aabb as RapierAabb, BroadPhase, CCDSolver, ColliderHandle, ColliderSet, EventHandler,
-    FeatureId, ImpulseJointHandle, ImpulseJointSet, IntegrationParameters, IslandManager,
+    Aabb, BroadPhase, CCDSolver, ColliderHandle, ColliderSet, EventHandler, FeatureId,
+    ImpulseJointHandle, ImpulseJointSet, IntegrationParameters, IslandManager,
     MultibodyJointHandle, MultibodyJointSet, NarrowPhase, PhysicsHooks, PhysicsPipeline,
     QueryFilter as RapierQueryFilter, QueryPipeline, Ray, Real, RigidBodyHandle, RigidBodySet,
 };
@@ -13,14 +13,11 @@ use crate::geometry::{Collider, PointProjection, RayIntersection, Toi};
 use crate::math::{Rot, Vect};
 use crate::pipeline::{CollisionEvent, ContactForceEvent, EventQueue, QueryFilter};
 use bevy::prelude::{Entity, EventWriter, GlobalTransform, Query};
-use bevy::render::primitives::Aabb;
 
 use crate::control::{CharacterCollision, MoveShapeOptions, MoveShapeOutput};
 use crate::dynamics::TransformInterpolation;
 use crate::plugin::configuration::{SimulationToRenderTime, TimestepMode};
 use crate::prelude::RapierRigidBodyHandle;
-#[cfg(feature = "dim2")]
-use bevy::math::Vec3Swizzles;
 use rapier::control::CharacterAutostep;
 
 /// The Rapier context, containing all the state of the physics engine.
@@ -715,14 +712,14 @@ impl RapierContext {
         mut callback: impl FnMut(Entity) -> bool,
     ) {
         #[cfg(feature = "dim2")]
-        let scaled_aabb = RapierAabb {
-            mins: (aabb.min().xy() / self.physics_scale).into(),
-            maxs: (aabb.max().xy() / self.physics_scale).into(),
+        let scaled_aabb = Aabb {
+            mins: (aabb.mins.xy() / self.physics_scale).into(),
+            maxs: (aabb.maxs.xy() / self.physics_scale).into(),
         };
         #[cfg(feature = "dim3")]
-        let scaled_aabb = RapierAabb {
-            mins: (aabb.min() / self.physics_scale).into(),
-            maxs: (aabb.max() / self.physics_scale).into(),
+        let scaled_aabb = Aabb {
+            mins: (aabb.mins / self.physics_scale).into(),
+            maxs: (aabb.maxs / self.physics_scale).into(),
         };
         #[allow(clippy::redundant_closure)]
         // False-positive, we can't move callback, closure becomes `FnOnce`
